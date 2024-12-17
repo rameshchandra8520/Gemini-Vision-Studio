@@ -15,12 +15,13 @@ FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
 def call_llm(img: Image, prompt: str) -> str:
     system_prompt = """
-    You are an image analysis assistant. Analyze the image based on the user prompt and provide responses in a structured JSON format.
+    You are an image analysis assistant. Analyze the provided image based on the user's prompt and return responses in a structured JSON format.
 
     ### General Guidelines:
     1. Always return a JSON object. Never include code fences or unstructured text.
     2. Limit to 25 objects, prioritizing objects relevant to the user's prompt.
     3. Be descriptive, concise, and precise when labeling and explaining objects.
+    4. Generate more detailed responses with proper heading, information based on the user's prompt and the image content in the "extra_info" key.
 
     ### JSON Response Structure:
     Return a JSON object with the following keys:
@@ -28,73 +29,9 @@ def call_llm(img: Image, prompt: str) -> str:
         - "box_2d": A list of coordinates [y1, x1, y2, x2] (normalized from 0 to 1000) for the object's bounding box.
         - "label": A descriptive name for the object, including unique characteristics (e.g., color, size, position).
         - "description": A detailed explanation or observation about the object (e.g., color, texture, material, or reflection details).
-    - "extra_info": Additional information based on the user’s query:
-        - If the query is about differences between two images, describe key visual differences.
-        - If the query asks for an object’s color, list all objects that match the specified color.
-        - If the query is about reflections, identify objects that appear reflective and explain why.
-        - If the query asks for scene explanations, summarize what is happening in the image, including spatial relationships and prominent objects.
-
-    ### Examples:
-
-    #### Example 1: General Object Detection
-    User Prompt: "What objects are in the image?"
-    Response:
-    {
-    "objects": [
-        {
-        "box_2d": [195, 483, 479, 527],
-        "label": "person in blue shirt",
-        "description": "A tall person wearing a blue shirt and dark pants, standing near the center."
-        },
-        {
-        "box_2d": [342, 150, 550, 300],
-        "label": "red car",
-        "description": "A small red car parked on the left side."
-        }
-    ],
-    "extra_info": "The image shows a person and a red car in a daytime outdoor setting."
-    }
-
-    #### Example 2: Color-Based Query
-    User Prompt: "What are the objects which are in color blue?"
-    Response:
-    {
-    "objects": [
-        {
-        "box_2d": [195, 483, 479, 527],
-        "label": "person in blue shirt",
-        "description": "A tall person wearing a blue shirt and dark pants, standing near the center."
-        }
-    ],
-    "extra_info": "The only blue object in the image is the person's shirt."
-    }
-
-    #### Example 3: Reflective Objects
-    User Prompt: "How many reflecting objects are there?"
-    Response:
-    {
-    "objects": [
-        {
-        "box_2d": [120, 430, 300, 500],
-        "label": "glass table",
-        "description": "A shiny glass table reflecting light in the center."
-        },
-        {
-        "box_2d": [400, 200, 480, 250],
-        "label": "mirror",
-        "description": "A wall-mounted mirror reflecting parts of the room."
-        }
-    ],
-    "extra_info": "There are 2 reflective objects: a glass table and a mirror."
-    }
-
-    #### Example 4: Image Differences
-    User Prompt: "Find the difference between two images."
-    Response:
-    {
-    "objects": [],
-    "extra_info": "The two images differ in the following ways: 1) A red car is present in the first image but absent in the second. 2) A person in a blue shirt appears closer to the camera in the second image."
-    }
+    - "extra_info": should be **key-value pair** and will provide relevant details based on the user's specific prompt, such as explanations, translations, or differences or UI code snippets in the proper format.
+        - The keys should be concise subheadings summarizing parts of the response.
+        - The values should contain the more clear detailed answers based on the user’s question and the image content.
     """
 
 
@@ -201,4 +138,13 @@ if __name__ == "__main__":
             plotted_image, extra_info= plot_bounding_boxes(resized_image, response)
         st.image(plotted_image)
         st.subheader("Detailed Information")
-        st.write(extra_info)    
+        for key, value in extra_info.items():
+            # if value is string
+            if isinstance(value, str):
+                st.subheader(key)
+                st.markdown(value)
+            else :
+                # if value is dict
+                st.subheader(key)
+                for k, v in value.items():
+                    st.markdown(f"**{k}**: {v}")
