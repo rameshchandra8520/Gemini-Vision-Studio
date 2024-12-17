@@ -11,6 +11,7 @@ from google.genai import types
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 load_dotenv()
+FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "Arial.ttf")
 
 def call_llm(img: Image, prompt: str) -> str:
     system_prompt = """
@@ -104,7 +105,7 @@ def call_llm(img: Image, prompt: str) -> str:
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
             temperature=0.5,
-            safety_settings=[  # https://ai.google.dev/api/generate-content#v1beta.HarmCategory
+            safety_settings=[ 
                 types.SafetySetting(
                     category="HARM_CATEGORY_DANGEROUS_CONTENT",
                     threshold="BLOCK_ONLY_HIGH",
@@ -112,7 +113,6 @@ def call_llm(img: Image, prompt: str) -> str:
             ],
         ),
     )
-    print("Response from LLM", response.text)
     return response.text
 
 
@@ -128,15 +128,12 @@ def plot_bounding_boxes(img: Image, bounding_boxes: str) -> Image:
     draw = ImageDraw.Draw(img)
 
     bounding_boxes = parse_json(bounding_boxes)
-    print("Bounding Boxes", bounding_boxes)
 
     bounding_boxes = json.loads(bounding_boxes)
     objects_boxes = bounding_boxes.get("objects", [])
-    print("Objects Boxes", objects_boxes)
 
     for box in objects_boxes:
         color = random.choice(colors)
-        print("bounding_box", box)
         # Convert normalized coordinates to absolute coordinates
         abs_y1 = int(box["box_2d"][0] / 1000 * height)
         abs_x1 = int(box["box_2d"][1] / 1000 * width)
@@ -149,9 +146,6 @@ def plot_bounding_boxes(img: Image, bounding_boxes: str) -> Image:
         if abs_y1 > abs_y2:
             abs_y1, abs_y2 = abs_y2, abs_y1
 
-        print(
-            f"Absolute Co-ordinates: {box['label']}, {abs_y1}, {abs_x1},{abs_y2}, {abs_x2}",
-        )
 
         draw.rectangle(((abs_x1, abs_y1), (abs_x2, abs_y2)), outline=color, width=4)
 
@@ -162,8 +156,7 @@ def plot_bounding_boxes(img: Image, bounding_boxes: str) -> Image:
             fill=color,
             font=ImageFont.truetype(
                 # "Arial.ttf",
-                # "path/to/your/font.ttf",
-                "C:/Windows/Fonts/arial.ttf",
+                FONT_PATH,
                 size=14,
             ),
         )
@@ -202,9 +195,6 @@ if __name__ == "__main__":
             (1024, int(1024 * height / width)), Image.Resampling.LANCZOS
         )
         os.unlink(image_path)
-        print(
-            f"Image Original Size: {img.size} | Resized Image size: {resized_image.size}"
-        )
 
         with st.spinner("Running..."):
             response = call_llm(resized_image, prompt)
