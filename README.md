@@ -16,13 +16,3 @@ This project is an AI-powered object detection and visualization tool built usin
 - [Streamlit](https://streamlit.io/)
 - [Gemini API Key](https://aistudio.google.com/app/apikey)
 
-
-
-### Additional Implementations
-- **Offline Model Support**
-    - Use open-source models (e.g., YOLO, CLIP, or LLaMA) for offline inference to reduce API dependency and costs.
-- **Prompt Optimization**
-    - Implement a prompt optimization algorithm to generate more accurate and relevant responses.
-    - Introduce custom prompt templates based on the user's input type or goal.
-- **More Detailed text responses**
-    - Provide detailed descriptions of the detected objects and their relationships in the image.
