@@ -1,4 +1,4 @@
-## Gemini Annotator
+## Gemini Vision Studio
 
 ### **Project Description**:  
 This project is an AI-powered object detection and visualization tool built using Streamlit and Google Gemini 2.0 API. It processes uploaded images, identifies objects using a large language model, and generates 2D bounding boxes with descriptive labels. Key features include:  
